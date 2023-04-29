@@ -12,7 +12,11 @@ impl Card {
         &self.raw_card.name
     }
 
-    pub fn get_image(&self) -> Result<Vec<Vec<u8>>> {
+    pub fn id(&self) -> &str {
+        &self.raw_card.id
+    }
+
+    pub fn get_images(&self) -> Result<Vec<Vec<u8>>> {
         if let Some(uris) = &self.raw_card.image_uris {
             Ok(vec![DOWNLOADER
                 .lock()

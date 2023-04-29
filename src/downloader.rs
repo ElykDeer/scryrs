@@ -3,7 +3,7 @@ use lazy_static::lazy_static;
 use reqwest::blocking::{get, Response};
 use std::time::SystemTime;
 
-const REQUEST_DELAY_MS: u128 = 100;
+const REQUEST_DELAY_MS: u128 = 200;
 
 lazy_static! {
     pub(crate) static ref DOWNLOADER: std::sync::Mutex<DownloadWrapper> =

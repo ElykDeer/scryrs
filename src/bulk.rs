@@ -37,6 +37,7 @@ pub struct BulkDownload {
 }
 
 impl BulkDownload {
+    /// TODO : Check file modified time and check if the all data should be refetched
     pub fn new<P: AsRef<Path>>(path: P, download_type: BulkDownloadType) -> Result<Self> {
         if !path.as_ref().is_file() {
             let mut downloader = DOWNLOADER.lock().unwrap();
@@ -95,5 +96,18 @@ impl BulkDownload {
             .map(|raw_card| Card {
                 raw_card: raw_card.unwrap(),
             })
+    }
+
+    pub fn get_card_by_id(&self, id: &str) -> Result<Card> {
+        for raw_card in Deserializer::from_reader(BufReader::new(File::open(&self.file).unwrap()))
+            .into_iter::<ScryfallCard>()
+        {
+            if let Ok(raw_card) = raw_card {
+                if raw_card.id == id {
+                    return Ok(Card { raw_card });
+                }
+            }
+        }
+        anyhow::bail!("Could not find card of that id");
     }
 }
