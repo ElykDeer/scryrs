@@ -1,6 +1,6 @@
 use crate::card::Card;
 use crate::downloader::DOWNLOADER;
-use crate::scryfall_structures::{ScryfallBulkData, ScryfallCard, ScryfallResult};
+use crate::scryfall_structures::{ScryfallBulkData, ScryfallResult};
 
 use anyhow::Result;
 use serde_json;
@@ -34,6 +34,7 @@ impl BulkDownloadType {
 
 pub struct BulkDownload {
     file: String,
+    card_cache: Option<Vec<Card>>,
 }
 
 impl BulkDownload {
@@ -87,25 +88,40 @@ impl BulkDownload {
 
         Ok(Self {
             file: path.as_ref().to_string_lossy().to_string(),
+            card_cache: None,
         })
     }
 
-    pub fn cards(&self) -> impl Iterator<Item = Card> + '_ {
-        Deserializer::from_reader(BufReader::new(File::open(&self.file).unwrap()))
-            .into_iter::<ScryfallCard>()
-            .map(|raw_card| Card {
-                raw_card: raw_card.unwrap(),
-            })
+    pub fn cards(&mut self) -> &Vec<Card> {
+        if self.card_cache.is_none() {
+            self.card_cache = Some(
+                Deserializer::from_reader(BufReader::new(File::open(&self.file).unwrap()))
+                    .into_iter()
+                    .map(|card| Card {
+                        raw_card: card.unwrap(),
+                    })
+                    .collect(),
+            );
+        }
+
+        &self.card_cache.as_ref().unwrap().as_ref()
     }
 
-    pub fn get_card_by_id(&self, id: &str) -> Result<Card> {
-        for raw_card in Deserializer::from_reader(BufReader::new(File::open(&self.file).unwrap()))
-            .into_iter::<ScryfallCard>()
-        {
-            if let Ok(raw_card) = raw_card {
-                if raw_card.id == id {
-                    return Ok(Card { raw_card });
-                }
+    pub fn get_card_by_id(&mut self, id: &str) -> Result<&Card> {
+        if self.card_cache.is_none() {
+            self.card_cache = Some(
+                Deserializer::from_reader(BufReader::new(File::open(&self.file).unwrap()))
+                    .into_iter()
+                    .map(|card| Card {
+                        raw_card: card.unwrap(),
+                    })
+                    .collect(),
+            );
+        }
+
+        for card in self.card_cache.as_ref().unwrap() {
+            if card.id() == id {
+                return Ok(card);
             }
         }
         anyhow::bail!("Could not find card of that id");
