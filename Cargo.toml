@@ -2,6 +2,12 @@
 name = "scryers"
 version = "0.1.0"
 edition = "2021"
+license = "MIT"
+description = "A simple alternative to Scryfall with caching and mass image downloading capabilities."
+homepage = "https://github.com/KyleMiles/scryrs"
+documentation = "https://github.com/KyleMiles/scryrs"
+repository = "https://github.com/KyleMiles/scryrs"
+readme = "readme.md"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
