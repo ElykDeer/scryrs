@@ -16,6 +16,34 @@ impl Card {
         &self.raw_card.id
     }
 
+    pub fn oracle_text(&self) -> &Option<String> {
+        &self.raw_card.oracle_text
+    }
+
+    pub fn type_line(&self) -> &Option<String> {
+        &self.raw_card.type_line
+    }
+
+    pub fn keywords(&self) -> &Vec<String> {
+        &self.raw_card.keywords
+    }
+
+    pub fn artist(&self) -> &Option<String> {
+        &self.raw_card.artist
+    }
+
+    pub fn flavor_name(&self) -> &Option<String> {
+        &self.raw_card.flavor_name
+    }
+
+    pub fn flavor_text(&self) -> &Option<String> {
+        &self.raw_card.flavor_text
+    }
+
+    pub fn set_name(&self) -> &Option<String> {
+        &self.raw_card.flavor_text
+    }
+
     pub fn get_images(&self) -> Result<Vec<Vec<u8>>> {
         if let Some(uris) = &self.raw_card.image_uris {
             Ok(vec![DOWNLOADER
