@@ -16,6 +16,22 @@ impl Card {
         &self.raw_card.id
     }
 
+    pub fn usd(&self) -> f64 {
+        if let Some(Some(price)) = self.raw_card.prices.get("usd") {
+            price.parse::<f64>().unwrap()
+        } else {
+            0.0
+        }
+    }
+
+    pub fn usd_foil(&self) -> f64 {
+        if let Some(Some(price)) = self.raw_card.prices.get("usd_foil") {
+            price.parse::<f64>().unwrap()
+        } else {
+            0.0
+        }
+    }
+
     pub fn oracle_text(&self) -> &Option<String> {
         &self.raw_card.oracle_text
     }
