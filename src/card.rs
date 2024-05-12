@@ -20,7 +20,7 @@ impl Card {
         if let Some(Some(price)) = self.raw_card.prices.get("usd") {
             price.parse::<f64>().unwrap()
         } else {
-            0.0
+            self.usd_foil()
         }
     }
 
