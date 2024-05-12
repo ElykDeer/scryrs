@@ -14,7 +14,7 @@ fn main() {
 
   // Allows you to easily iterate over card information, without needing to re-download Scryfall database information (>140Mb!) every time.
   // Lazy loads card info, so initialization speed should be super quick
-  let cards = BulkDownload::new("./scryfall.db", BulkDownloadType::UniqueArtwork).unwrap();
+  let cards = BulkDownload::new("./scryfall.db", BulkDownloadType::DefaultCards).unwrap();
   for card in cards.cards() {
     println!("Image at images/{}-0.jpg", card.name());
   }
