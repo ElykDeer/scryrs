@@ -34,8 +34,7 @@ impl BulkDownloadType {
 }
 
 pub struct BulkDownload {
-    file: String,
-    card_cache: Option<Vec<Card>>,
+    card_cache: Vec<Card>,
 }
 
 impl BulkDownload {
@@ -94,39 +93,23 @@ impl BulkDownload {
         }
 
         Ok(Self {
-            file: path.as_ref().to_string_lossy().to_string(),
-            card_cache: None,
+            card_cache: Deserializer::from_reader(BufReader::new(
+                File::open(path.as_ref().to_string_lossy().to_string()).unwrap(),
+            ))
+            .into_iter()
+            .map(|card| Card {
+                raw_card: card.unwrap(),
+            })
+            .collect(),
         })
     }
 
-    pub fn cards(&mut self) -> &Vec<Card> {
-        if self.card_cache.is_none() {
-            self.card_cache = Some(
-                Deserializer::from_reader(BufReader::new(File::open(&self.file).unwrap()))
-                    .into_iter()
-                    .map(|card| Card {
-                        raw_card: card.unwrap(),
-                    })
-                    .collect(),
-            );
-        }
-
-        &self.card_cache.as_ref().unwrap().as_ref()
+    pub fn cards(&self) -> &Vec<Card> {
+        &self.card_cache.as_ref()
     }
 
-    pub fn get_card_by_id(&mut self, id: &str) -> Result<&Card> {
-        if self.card_cache.is_none() {
-            self.card_cache = Some(
-                Deserializer::from_reader(BufReader::new(File::open(&self.file).unwrap()))
-                    .into_iter()
-                    .map(|card| Card {
-                        raw_card: card.unwrap(),
-                    })
-                    .collect(),
-            );
-        }
-
-        for card in self.card_cache.as_ref().unwrap() {
+    pub fn get_card_by_id(&self, id: &str) -> Result<&Card> {
+        for card in &self.card_cache {
             if card.id() == id {
                 return Ok(card);
             }

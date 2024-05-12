@@ -36,6 +36,10 @@ impl Card {
         &self.raw_card.lang
     }
 
+    pub fn promo(&self) -> bool {
+        self.raw_card.promo
+    }
+
     pub fn oracle_text(&self) -> &Option<String> {
         &self.raw_card.oracle_text
     }
