@@ -32,6 +32,10 @@ impl Card {
         }
     }
 
+    pub fn lang(&self) -> &str {
+        &self.raw_card.lang
+    }
+
     pub fn oracle_text(&self) -> &Option<String> {
         &self.raw_card.oracle_text
     }
@@ -72,11 +76,15 @@ impl Card {
             Ok(faces
                 .iter()
                 .filter_map(|f| {
-                    DOWNLOADER
-                        .lock()
-                        .unwrap()
-                        .make_request(f.image_uris.as_ref().unwrap().normal.as_str())
-                        .ok()
+                    if let Some(uris) = f.image_uris.as_ref() {
+                        DOWNLOADER
+                            .lock()
+                            .unwrap()
+                            .make_request(uris.normal.as_str())
+                            .ok()
+                    } else {
+                        None
+                    }
                 })
                 .filter_map(|r| r.bytes().ok())
                 .map(|b| b.to_vec())

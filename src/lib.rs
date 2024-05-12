@@ -8,13 +8,28 @@ use std::{fs, io::Write, time::SystemTime};
 
 /// Downloads high resolution copies of all the cards. This over-respects Scryfall's api limits. Takes about 3 hours to complete.
 pub fn download_all_cards() {
-    let mut scryer = BulkDownload::new("./scryfall.db", BulkDownloadType::UniqueArtwork).unwrap();
+    let mut scryer = BulkDownload::new("./scryfall.db", BulkDownloadType::DefaultCards).unwrap();
     let mut card_index = 1;
 
     let start_time = SystemTime::now();
     let cards = scryer.cards();
     let total_cards = cards.len();
     for card in cards {
+        if std::path::Path::new(&format!("images/{}-0.jpg", card.id())).exists() {
+            println!(
+                "{:0>5}/{} ({:.2}m..est {:.2}m remaining) : Skipping {}",
+                card_index,
+                total_cards,
+                start_time.elapsed().unwrap().as_secs_f64() / 60.0,
+                (card_index as f64 / start_time.elapsed().unwrap().as_secs_f64()
+                    * (total_cards - card_index) as f64)
+                    / 60.0,
+                card.name()
+            );
+            card_index += 1;
+            continue;
+        }
+
         println!(
             "{:0>5}/{} ({:.2}m..est {:.2}m remaining) : Downloading {}",
             card_index,
@@ -39,7 +54,7 @@ pub fn download_all_cards() {
 
 /// If any of the card images fail, you can use this to download the images for a specific ID again.
 pub fn download_cards_for_id(id: &str) {
-    let mut scryer = BulkDownload::new("./scryfall.db", BulkDownloadType::UniqueArtwork).unwrap();
+    let mut scryer = BulkDownload::new("./scryfall.db", BulkDownloadType::DefaultCards).unwrap();
     for (card_art_n, image) in (scryer.get_card_by_id(id).unwrap().get_images().unwrap())
         .into_iter()
         .enumerate()

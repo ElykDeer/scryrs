@@ -6,9 +6,10 @@ use anyhow::Result;
 use serde_json;
 use serde_json::Deserializer;
 use std::{
-    fs::File,
+    fs::{metadata, File},
     io::{BufRead, BufReader, BufWriter, Write},
     path::Path,
+    time::{Duration, SystemTime},
 };
 
 #[allow(dead_code)]
@@ -38,9 +39,16 @@ pub struct BulkDownload {
 }
 
 impl BulkDownload {
-    /// TODO : Check file modified time and check if the all data should be refetched
     pub fn new<P: AsRef<Path>>(path: P, download_type: BulkDownloadType) -> Result<Self> {
-        if !path.as_ref().is_file() {
+        let metadata = metadata(&path)?;
+
+        if !path.as_ref().is_file()
+            || if let Ok(modified) = metadata.modified() {
+                SystemTime::now().duration_since(modified)? > Duration::from_secs(24 * 60 * 60)
+            } else {
+                false
+            }
+        {
             let mut downloader = DOWNLOADER.lock().unwrap();
             if let ScryfallResult::List(list) = downloader
                 .make_request("https://api.scryfall.com/bulk-data")?
@@ -70,11 +78,10 @@ impl BulkDownload {
                 while input_reader.read_line(&mut line)? > 0 {
                     let line_length = line.trim_end().len();
                     if line_length > 4 {
-                        println!("`{:?}`", &line[line_length - 1..]);
                         if &line[line_length - 1..] == ",\n" {
-                            write!(output_writer, "{}", &line[2..line_length - 1])?;
+                            write!(output_writer, "{}", &line[..line_length - 1])?;
                         } else {
-                            write!(output_writer, "{}", &line[2..])?;
+                            write!(output_writer, "{}", &line)?;
                         }
                     }
                     line.clear();
